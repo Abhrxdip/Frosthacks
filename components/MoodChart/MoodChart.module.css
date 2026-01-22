@@ -1,0 +1,70 @@
+.chartContainer {
+  margin-top: 1rem;
+}
+
+.emptyState {
+  padding: 3rem 2rem;
+  text-align: center;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  border: 2px dashed var(--color-border);
+}
+
+.emptyState p {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.tooltip {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.tooltipDate {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.tooltipMood {
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .legend {
+    gap: 1rem;
+  }
+  
+  .legendItem {
+    font-size: 0.8rem;
+  }
+}

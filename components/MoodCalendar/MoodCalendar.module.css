@@ -1,0 +1,104 @@
+.container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+  color: white;
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.heatmapWrapper {
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+/* Override react-calendar-heatmap styles */
+.heatmapWrapper :global(.react-calendar-heatmap) {
+  width: 100%;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap text) {
+  font-size: 10px;
+  fill: #888;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap .color-empty) {
+  fill: rgba(255, 255, 255, 0.05);
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap .color-scale-1) {
+  fill: #ff4444;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap .color-scale-2) {
+  fill: #ff8844;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap .color-scale-3) {
+  fill: #ffcc44;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap .color-scale-4) {
+  fill: #88ff44;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap .color-scale-5) {
+  fill: #44ff88;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap rect) {
+  rx: 2;
+  transition: all 0.2s;
+}
+
+.heatmapWrapper :global(.react-calendar-heatmap rect:hover) {
+  stroke: white;
+  stroke-width: 2;
+  transform: scale(1.1);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  color: #888;
+  font-size: 13px;
+}
+
+.legendBoxes {
+  display: flex;
+  gap: 4px;
+}
+
+.legendBox {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.level1 { background: #ff4444; }
+.level2 { background: #ff8844; }
+.level3 { background: #ffcc44; }
+.level4 { background: #88ff44; }
+.level5 { background: #44ff88; }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .heatmapWrapper :global(.react-calendar-heatmap text) {
+    font-size: 8px;
+  }
+}
