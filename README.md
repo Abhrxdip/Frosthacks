@@ -1,22 +1,29 @@
-# 🧠 MindSpace - AI-Powered Mental Health Mood Analysis System
+# 🧠 MindSpace - Voice-First AI Mood Analyzer
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 
-> An intelligent mental health companion that uses multimodal AI analysis (voice + text) to track emotional wellbeing and provide personalized recommendations.
+> An intelligent voice-first mental health companion that understands emotions through voice tone, transcription, and adaptive LLM analysis. No rigid timelines or forced tracking - just empathetic, personalized support.
 
 ---
 
 ## 🎯 **Project Overview**
 
-MindSpace is a comprehensive mental health tracking application that combines **voice emotion detection**, **text sentiment analysis**, and **AI-powered recommendations** to help users understand and improve their emotional wellbeing. Unlike traditional text-only mood trackers, MindSpace analyzes both what you say and how you say it to provide deeper insights into your mental state.
+MindSpace is a revolutionary voice-first mood tracking application that uses **multimodal AI analysis** to understand emotional wellbeing. Unlike traditional text-based trackers with rigid rules, MindSpace:
+
+- **Listens to your voice** and analyzes emotional tone (stress, anxiety, fatigue)
+- **Transcribes speech automatically** using advanced speech-to-text
+- **Uses LLM reasoning** to understand patterns (not hard-coded thresholds)
+- **Adapts analysis windows** based on your data (not fixed 6-day rules)
+- **Provides empathetic insights** in natural language
 
 ### **Key Innovation**
-- **Multimodal Analysis**: Combines voice prosody features with text sentiment to detect emotional discrepancies
-- **AI-Powered Insights**: Uses LLM (Gemini/GPT/Claude) to generate personalized mental health recommendations
-- **Privacy-First**: All voice/text processing happens locally, with only anonymized data sent to LLM APIs
-- **Scientific Foundation**: Uses research-backed acoustic features (pitch, jitter, shimmer) validated in clinical studies
+- **Voice-Primary Design**: Voice recordings capture emotions that text can't express
+- **LLM-Adaptive Logic**: No fixed timelines - AI decides when to analyze and intervene
+- **Emotional Intelligence**: Detects discrepancies between words and tone
+- **Conversational Support**: Human-friendly insights, not clinical diagnostics
+- **Privacy-First**: Local voice processing, encrypted storage
 
 ---
 
@@ -109,296 +116,125 @@ Frontend: Stores token in localStorage
 [Redirect to Dashboard]
 ```
 
-### **2. Dashboard Loading Flow**
+### **2. Voice Recording Flow (Primary Method)**
 ```
-Dashboard Component Mounts
+User Opens Journal → Default: Voice Mode
     ↓
-useAuth Hook: Validates JWT token
+User Clicks "Start Recording"
     ↓
-useMood Hook: Fetches journal history
-    ↓
-Frontend → GET /journals (with JWT) → Node.js Backend
-    ↓
-Backend: Authenticates user, retrieves all journal entries
-    ↓
-Frontend: Renders mood visualization components:
-    - MoodChart (Recharts line graph)
-    - MoodCalendar (Heatmap)
-    - MoodGlobe3D (Three.js 3D globe)
-    - AI Intervention Bot (conditional)
-```
-
-### **3. Text Journal Entry Flow**
-```
-User Clicks "New Entry" → Navigate to /journal
-    ↓
-User Types Text Entry: "I'm feeling stressed about work"
-    ↓
-User Clicks "Analyze Mood"
-    ↓
-Frontend → POST /journals → Node.js Backend
-    {
-        "type": "text",
-        "content": "I'm feeling stressed about work",
-        "timestamp": "2026-01-27T10:30:00"
-    }
-    ↓
-Backend → POST /analyze/text → Python Flask API
-    ↓
-Python: SentimentAnalyzer.analyze()
-    - Uses VADER (Valence Aware Dictionary)
-    - Calculates compound score: -1.0 to +1.0
-    - Extracts emotional keywords
-    - Converts to mood score (0-10 scale)
-    ↓
-Python Returns:
-    {
-        "moodScore": 4.5,
-        "sentiment": {
-            "compound": -0.4,
-            "positive": 0.1,
-            "negative": 0.6,
-            "neutral": 0.3
-        },
-        "indicators": {
-            "negative_words": ["stressed"],
-            "positive_words": [],
-            "dominant_emotion": "anxiety"
-        }
-    }
-    ↓
-Backend: Saves to journal storage with mood score
-    ↓
-Backend → Returns journal entry to frontend
-    ↓
-Frontend: Updates mood chart & displays result
-```
-
-### **4. Voice Journal Entry Flow**
-```
-User Clicks "Record Voice"
-    ↓
-Frontend: Requests microphone permission
-    ↓
-User Records 5-10 second audio message
-    ↓
-Frontend: Converts recording to WAV/WebM format
+Records 5-60 seconds of voice
     ↓
 Frontend → POST /journals (multipart/form-data) → Node.js Backend
-    {
-        "type": "voice",
-        "timestamp": "2026-01-27T10:35:00",
-        "audio": [binary audio file]
-    }
     ↓
-Backend: Saves audio file to uploads/ directory
+Backend → POST /analyze/voice → Python Flask API
     ↓
-Backend → POST /analyze/voice (multipart) → Python Flask API
+Python AI Analysis:
+┌──────────────────────────────────────────┐
+│ STEP 1: Acoustic Feature Extraction      │
+│ - Pitch (F0): Emotional arousal          │
+│ - Jitter: Stress indicators              │
+│ - Shimmer: Voice strain                  │
+│ - Energy: Depression markers             │
+│ - Speaking Rate: Cognitive load          │
+└──────────────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│ STEP 2: Speech-to-Text Transcription     │
+│ - Converts voice to text                 │
+│ - Uses Google Speech Recognition         │
+│ - Captures what was actually said        │
+└──────────────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│ STEP 3: LLM Emotional Analysis           │
+│ - Analyzes transcription + voice data    │
+│ - Detects: anxiety, stress, sadness,     │
+│   calm, fatigue, excitement, etc.        │
+│ - Generates natural language summary     │
+│ - Assigns mood score (LLM-driven)        │
+└──────────────────────────────────────────┘
     ↓
-Python: VoiceAnalyzer.analyze()
-    ┌─────────────────────────────────────────┐
-    │ 1. Load Audio (Librosa)                 │
-    │    - Resample to 16kHz                  │
-    │    - Normalize amplitude                │
-    └─────────────────────────────────────────┘
-    ┌─────────────────────────────────────────┐
-    │ 2. Extract Acoustic Features            │
-    │                                         │
-    │  A. Pitch (F0) - Parselmouth:           │
-    │     - Mean pitch (Hz)                   │
-    │     - Pitch range (variability)         │
-    │     - Higher pitch → Arousal/excitement │
-    │     - Lower pitch → Sadness/depression  │
-    │                                         │
-    │  B. Jitter (Pitch Perturbation):        │
-    │     - Cycle-to-cycle pitch variation    │
-    │     - High jitter → Stress/anxiety      │
-    │     - Normal: < 1%                      │
-    │                                         │
-    │  C. Shimmer (Amplitude Perturbation):   │
-    │     - Cycle-to-cycle amplitude change   │
-    │     - High shimmer → Voice strain       │
-    │     - Normal: < 3%                      │
-    │                                         │
-    │  D. Speaking Rate:                      │
-    │     - Syllables per second              │
-    │     - Fast → Anxiety/excitement         │
-    │     - Slow → Depression/fatigue         │
-    │                                         │
-    │  E. Energy (RMS):                       │
-    │     - Average voice intensity           │
-    │     - Low energy → Depression           │
-    │     - High energy → Positive mood       │
-    │                                         │
-    │  F. MFCC (Mel-frequency cepstral):      │
-    │     - Captures voice timbre             │
-    │     - Used in emotion classification    │
-    └─────────────────────────────────────────┘
-    ┌─────────────────────────────────────────┐
-    │ 3. Calculate Mood Score                 │
-    │    - Weighted combination of features   │
-    │    - Normalized to 0-10 scale           │
-    │    - Confidence score (0-1)             │
-    └─────────────────────────────────────────┘
+Returns to Frontend:
+{
+  "transcription": "Today was really hard...",
+  "emotionalTone": {
+    "primary": "sadness",
+    "secondary": ["fatigue", "stress"],
+    "intensity": 0.75
+  },
+  "emotionalSummary": "You sound emotionally drained and overwhelmed.",
+  "moodScore": 3.5,
+  "confidence": 0.85
+}
     ↓
-Python Returns:
-    {
-        "moodScore": 6.2,
-        "confidence": 0.78,
-        "features": {
-            "pitch_mean": 185.5,
-            "pitch_std": 42.3,
-            "jitter": 0.012,
-            "shimmer": 0.045,
-            "speaking_rate": 3.2,
-            "energy": 0.68
-        },
-        "interpretation": {
-            "arousal": "moderate",
-            "stress_level": "low",
-            "voice_quality": "good"
-        }
-    }
-    ↓
-Backend: Saves to journal with voice metadata
-    ↓
-Frontend: Displays voice analysis results
+Frontend displays rich emotional insights
 ```
 
-### **5. Combined (Text + Voice) Analysis Flow**
+### **3. Adaptive Mood Pattern Analysis (No Fixed Rules)**
 ```
-User Records Voice AND Provides Text
+User views Dashboard
     ↓
-Backend: Processes both in parallel
-    ├─→ POST /analyze/text → Text analysis
-    └─→ POST /analyze/voice → Voice analysis
-    ↓
-Backend: Receives both scores
-    - Text mood: 7.0 (says "I'm fine")
-    - Voice mood: 4.5 (voice shows stress)
-    ↓
-Backend → POST /analyze/combined → Python Flask API
+Frontend → POST /analyze/adaptive → Python Flask API
     {
-        "textScore": 7.0,
-        "voiceScore": 4.5,
-        "textData": {...},
-        "voiceData": {...}
+      "moodEntries": [all recent journal entries]
     }
     ↓
-Python: MoodAggregator.combine_scores()
-    - Weighted average: 60% voice, 40% text
-    - Final score: (4.5 * 0.6) + (7.0 * 0.4) = 5.5
-    - Discrepancy detection: |7.0 - 4.5| = 2.5 (HIGH)
-    - Flag: "Emotional discrepancy detected"
+Python: AdaptiveMoodAnalyzer
+┌──────────────────────────────────────────┐
+│ LLM Determines Analysis Window           │
+│ - NOT fixed 6-day rule                   │
+│ - Considers:                             │
+│   • Data density (entries per day)       │
+│   • Mood volatility                      │
+│   • Emotional urgency                    │
+│ - Output: "Analyze past 3 days" or      │
+│           "Analyze past week"            │
+└──────────────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│ LLM Analyzes Emotional Patterns          │
+│ - NO hard-coded thresholds              │
+│ - Identifies:                            │
+│   • Mood trends (improving/declining)    │
+│   • Recurring emotional themes           │
+│   • Warning signs (persistent low mood)  │
+│   • Discrepancies (words vs. tone)       │
+│ - Decides intervention level             │
+└──────────────────────────────────────────┘
     ↓
-Python Returns:
-    {
-        "finalMoodScore": 5.5,
-        "textScore": 7.0,
-        "voiceScore": 4.5,
-        "discrepancy": {
-            "level": "high",
-            "difference": 2.5,
-            "interpretation": "User may be masking emotions"
-        },
-        "dominant_modality": "voice",
-        "confidence": 0.82
-    }
+Returns Adaptive Analysis:
+{
+  "analysisWindow": "past 4 days",
+  "trendDirection": "declining",
+  "emotionalPattern": "Persistent fatigue with anxiety spikes",
+  "needsAttention": true,
+  "supportLevel": "moderate",
+  "insights": "You've been pushing through exhaustion...",
+  "recommendations": [
+    "Consider taking a full rest day",
+    "Talk to someone you trust",
+    "Professional support might help"
+  ]
+}
     ↓
-Frontend: Displays combined analysis with warning
-    - Shows discrepancy alert
-    - Suggests professional support if needed
+Frontend shows personalized, empathetic insights
 ```
 
-### **6. AI Recommendations Flow**
+### **4. Intelligent Intervention (LLM-Decided)**
 ```
-User Clicks "Get AI Insights"
+Background: System monitors patterns
     ↓
-Frontend → POST /llm/recommendations → Node.js Backend
-    {
-        "userId": "user123",
-        "recentMoods": [5.5, 6.0, 4.5, 5.0],
-        "currentEntry": {
-            "text": "I'm fine",
-            "voiceFeatures": {...},
-            "discrepancy": true
-        }
-    }
+LLM evaluates: "Does this person need support?"
     ↓
-Backend → POST /llm/generate-advice → Python Flask API
+NOT based on "3 days under 4/10" rule
     ↓
-Python: DecisionMaker.generate_recommendations()
-    ┌─────────────────────────────────────────┐
-    │ 1. Load Conversation History            │
-    │    - Previous sessions                  │
-    │    - Mood trends                        │
-    │    - User context                       │
-    └─────────────────────────────────────────┘
-    ┌─────────────────────────────────────────┐
-    │ 2. Prepare LLM Prompt                   │
-    │    - System role: Mental health advisor │
-    │    - User mood history                  │
-    │    - Current mood analysis              │
-    │    - Detected discrepancies             │
-    └─────────────────────────────────────────┘
-    ┌─────────────────────────────────────────┐
-    │ 3. Call LLM API                         │
-    │    - Gemini/GPT/Claude (configurable)   │
-    │    - Temperature: 0.7 (balanced)        │
-    │    - Max tokens: 500                    │
-    └─────────────────────────────────────────┘
-    ┌─────────────────────────────────────────┐
-    │ 4. Save to Conversation History         │
-    │    - Store recommendations              │
-    │    - Update user context                │
-    └─────────────────────────────────────────┘
+Based on contextual understanding:
+  - Emotional tone over time
+  - Voice stress indicators
+  - Discrepancies in expression
+  - User's unique patterns
     ↓
-Python Returns:
-    {
-        "recommendations": [
-            "I notice a discrepancy between your words and tone...",
-            "Consider taking a short break for deep breathing",
-            "Would you like to talk about what's stressing you?"
-        ],
-        "activities": [
-            "5-minute meditation",
-            "Walk outside",
-            "Call a friend"
-        ],
-        "resources": [
-            "Stress management techniques",
-            "Mindfulness exercises"
-        ],
-        "urgency": "moderate"
-    }
-    ↓
-Frontend: Displays AI recommendations in chat interface
-    - Shows as conversation bubbles
-    - Provides actionable suggestions
-    - Links to resources
-```
-
-### **7. AI Intervention Trigger Flow**
-```
-Background: useMood hook monitors mood history
-    ↓
-Detection Criteria:
-    - 3+ consecutive days with mood < 4.0
-    - OR sudden drop > 3 points in 2 days
-    - OR high discrepancy scores (> 2.5)
-    ↓
-Frontend: shouldIntervene() returns true
-    ↓
-Check localStorage:
-    - Has bot been dismissed in last 24 hours?
-    - No → Show AI Intervention Bot
-    - Yes → Wait for next trigger
-    ↓
-[AI Intervention Bot appears]
-    - Animated entrance
-    - Empathetic message
-    - Offers resources & professional help
-    - User can dismiss or engage
+If LLM says "needs attention" →
+    AI Bot appears with empathetic message
+    Offers resources, not forced check-ins
+    Respects user autonomy
 ```
 
 ---
@@ -501,31 +337,38 @@ npm run dev
 
 ## 🎨 **Key Features**
 
-### **1. Multimodal Emotion Detection**
-- **Text Analysis**: VADER sentiment analysis with keyword extraction
-- **Voice Analysis**: Acoustic features (pitch, jitter, shimmer, energy, speaking rate)
-- **Combined Analysis**: Weighted fusion (60% voice, 40% text) with discrepancy detection
+### **1. Voice-First Design** 🎤
+- **Primary Input Method**: Voice recording is default and recommended
+- **Speech-to-Text**: Automatic transcription of what you say
+- **Emotional Tone Detection**: AI analyzes how you sound (stress, fatigue, anxiety, calm)
+- **Acoustic Analysis**: Pitch, jitter, shimmer, energy, speaking rate
+- **Rich Insights**: Natural language emotional summaries
 
-### **2. AI-Powered Insights**
-- **Personalized Recommendations**: Context-aware advice using LLM
-- **Conversation History**: Maintains session context for better advice
-- **Adaptive Questioning**: AI generates relevant follow-up questions
+### **2. LLM-Adaptive Analysis** 🤖
+- **No Fixed Rules**: Replaces hard-coded thresholds with intelligent reasoning
+- **Dynamic Time Windows**: Analysis period adapts to your data (not fixed 6-day tracking)
+- **Pattern Recognition**: LLM identifies emotional trends and concerning patterns
+- **Contextual Understanding**: Considers your unique emotional baseline
+- **Empathetic Communication**: Human-friendly insights, not clinical jargon
 
-### **3. Beautiful Visualizations**
+### **3. Intelligent Interventions** 🆘
+- **LLM-Decided Support**: AI determines when you need help (no arbitrary triggers)
+- **Adaptive Support Levels**: none → gentle → moderate → urgent
+- **Personalized Recommendations**: Based on your specific patterns
+- **No Forced Tracking**: Respects autonomy, doesn't pressure daily check-ins
+- **Resource Suggestions**: Links to professional help when appropriate
+
+### **4. Discrepancy Detection** 🎭
+- **Words vs. Tone Analysis**: Detects when you say "I'm fine" but voice shows distress
+- **Emotional Masking**: Identifies when people hide true feelings
+- **Combined Scoring**: 60% voice + 40% text for accuracy
+- **Privacy-Respecting**: Alerts user gently, doesn't force disclosure
+
+### **5. Beautiful Visualizations** ✨
 - **3D Mood Globe**: Interactive Three.js globe showing mood distribution
-- **Mood Chart**: Line graph with trend indicators
-- **Mood Calendar**: Heatmap showing mood patterns over time
-
-### **4. Intelligent Interventions**
-- **Automatic Triggers**: Detects concerning mood patterns
-- **AI Bot**: Proactive support with empathetic messaging
-- **Resource Suggestions**: Links to mental health resources
-
-### **5. Privacy & Security**
-- **Local Processing**: Voice/text analysis on user's machine
-- **JWT Authentication**: Secure token-based auth
-- **No Data Selling**: User data never shared or sold
-- **Encryption-Ready**: Built with end-to-end encryption support
+- **Adaptive Charts**: Visualization adjusts to your data density
+- **Mood Calendar**: Heatmap showing emotional patterns
+- **No Streak Pressure**: Visualizations don't guilt-trip for missing days
 
 ---
 

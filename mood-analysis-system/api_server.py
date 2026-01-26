@@ -14,6 +14,7 @@ import tempfile
 from services.voice_analyzer import VoiceAnalyzer
 from services.sentiment_analyzer import SentimentAnalyzer
 from services.aggregator import MoodAggregator
+from services.adaptive_analyzer import AdaptiveMoodAnalyzer
 from llm.question_generator import QuestionGenerator
 from llm.decision_maker import DecisionMaker
 from utils.session_manager import SessionManager
@@ -26,11 +27,12 @@ CORS(app)  # Enable CORS for frontend requests
 voice_analyzer = VoiceAnalyzer()
 sentiment_analyzer = SentimentAnalyzer()
 mood_aggregator = MoodAggregator()
+adaptive_analyzer = AdaptiveMoodAnalyzer()
 question_generator = QuestionGenerator()
 decision_maker = DecisionMaker()
 session_manager = SessionManager()
 
-print("✅ Mood Analysis API Server initialized")
+print("✅ Mood Analysis API Server initialized (Voice-first, LLM-adaptive)")
 
 # =============================================================================
 # Health Check
@@ -340,6 +342,54 @@ def get_trend():
         return jsonify({'error': str(e)}), 500
 
 # =============================================================================
+# Adaptive Mood Analysis (LLM-driven, no fixed rules)
+# =============================================================================
+
+@app.route('/analyze/adaptive', methods=['POST'])
+def adaptive_mood_analysis():
+    """
+    Analyze mood history using adaptive LLM-based logic.
+    No fixed time windows or hard-coded thresholds.
+    
+    Request body:
+    {
+        "moodEntries": [
+            {
+                "timestamp": "2026-01-27T10:00:00Z",
+                "moodScore": 6.5,
+                "emotionalTone": {...},
+                "transcription": "...",
+                "content": "..."
+            },
+            ...
+        ]
+    }
+    
+    Returns:
+    {
+        "analysisWindow": "past 5 days",
+        "trendDirection": "stable|improving|declining|volatile",
+        "emotionalPattern": "...",
+        "needsAttention": true|false,
+        "supportLevel": "none|gentle|moderate|urgent",
+        "insights": "Human-friendly analysis",
+        "recommendations": [...]
+    }
+    """
+    try:
+        data = request.get_json()
+        mood_entries = data.get('moodEntries', [])
+        
+        analysis = adaptive_analyzer.analyze_mood_history(mood_entries)
+        
+        return jsonify(analysis)
+        
+    except Exception as e:
+        print(f"❌ Adaptive analysis error: {e}")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+# =============================================================================
 # Start Server
 # =============================================================================
 
@@ -347,10 +397,12 @@ if __name__ == '__main__':
     port = int(os.getenv('MOOD_API_PORT', 5001))
     print(f"\n🚀 Mood Analysis API running on http://localhost:{port}")
     print(f"📊 Using LLM Provider: {Config.LLM_PROVIDER}")
+    print(f"🎤 Voice-first, LLM-adaptive analysis enabled")
     print("\nAvailable endpoints:")
     print("  POST /analyze/text")
-    print("  POST /analyze/voice")
+    print("  POST /analyze/voice (Enhanced with speech-to-text & LLM)")
     print("  POST /analyze/combined")
+    print("  POST /analyze/adaptive (LLM-driven pattern analysis)")
     print("  POST /llm/questions")
     print("  POST /llm/recommendations")
     print("  POST /session/add")

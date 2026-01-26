@@ -175,8 +175,77 @@
 .supportText p {
   color: var(--color-text-secondary);
   font-size: 0.95rem;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+/* Voice-first UI styles */
+.voiceIntro {
+  padding: 1rem;
+}
+
+.voiceIntro h3 {
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.voiceIntro ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.voiceIntro li {
+  padding: 0.5rem 0;
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+}
+
+.voiceInsights {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%);
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.voiceInsights h3 {
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.transcription,
+.emotions,
+.summary {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid var(--color-primary);
+}
+
+.transcription strong,
+.emotions strong,
+.summary strong {
+  display: block;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transcription p,
+.emotions p,
+.summary p {
+  color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.6;
+}
+
+.transcription p {
+  font-style: italic;
+  color: #4A5568;
 }
 
 @media (max-width: 768px) {
@@ -191,5 +260,9 @@
   .modeBtn {
     padding: 0.875rem;
     font-size: 0.9rem;
+  }
+  
+  .voiceInsights {
+    padding: 1rem;
   }
 }
