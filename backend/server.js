@@ -4,9 +4,15 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
+const FormData = require('form-data');
+const fetch = require('node-fetch');
+const fs = require('fs');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
+
+// Mood Analysis API Configuration
+const MOOD_API_URL = process.env.MOOD_API_URL || 'http://localhost:5001';
 
 // Middleware
 app.use(cors());
@@ -107,7 +113,37 @@ app.post('/auth/login', async (req, res) => {
 
 // ==================== JOURNAL ENDPOINTS ====================
 
-// Simple sentiment analysis function
+// Helper function to call mood analysis API
+async function analyzeMoodWithPython(text, audioPath = null) {
+  try {
+    const formData = new FormData();
+    
+    if (text) {
+      formData.append('text', text);
+    }
+    
+    if (audioPath) {
+      formData.append('audio', fs.createReadStream(audioPath));
+    }
+    
+    const response = await fetch(`${MOOD_API_URL}/analyze/combined`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Mood API error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('❌ Mood analysis API error:', error.message);
+    return null;
+  }
+}
+
+// Simple sentiment analysis function (fallback if Python API unavailable)
 function analyzeSentiment(text) {
   const positiveWords = ['happy', 'joy', 'love', 'excellent', 'good', 'great', 'wonderful', 
     'fantastic', 'amazing', 'positive', 'excited', 'grateful', 'blessed', 'peaceful', 
@@ -138,14 +174,23 @@ function analyzeSentiment(text) {
 }
 
 // Submit text journal
-app.post('/journal/text', authenticateToken, (req, res) => {
+app.post('/journal/text', authenticateToken, async (req, res) => {
   try {
     let { content, mood } = req.body;
     
-    // If no mood provided, use sentiment analysis
+    // Try to use Python mood analysis API
     if (!mood && content) {
-      mood = analyzeSentiment(content);
-      console.log(`🤖 AI analyzed mood: ${mood}/10`);
+      console.log('🤖 Calling Python mood analysis API...');
+      const moodAnalysis = await analyzeMoodWithPython(content);
+      
+      if (moodAnalysis && moodAnalysis.aggregated) {
+        mood = Math.round(moodAnalysis.aggregated.overallMood);
+        console.log(`✅ Python API analyzed mood: ${mood}/10 (${moodAnalysis.aggregated.category})`);
+      } else {
+        // Fallback to simple sentiment analysis
+        mood = analyzeSentiment(content);
+        console.log(`🤖 Fallback analyzed mood: ${mood}/10`);
+      }
     }
     
     const journal = {
@@ -174,13 +219,26 @@ app.post('/journal/text', authenticateToken, (req, res) => {
 });
 
 // Submit voice journal
-app.post('/journal/voice', authenticateToken, upload.single('audio'), (req, res) => {
+app.post('/journal/voice', authenticateToken, upload.single('audio'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No audio file provided' });
     }
 
-    const mood = req.body.mood ? parseInt(req.body.mood) : 5;
+    let mood = req.body.mood ? parseInt(req.body.mood) : null;
+
+    // Try to use Python mood analysis API for voice
+    if (!mood) {
+      console.log('🎙️ Calling Python voice analysis API...');
+      const moodAnalysis = await analyzeMoodWithPython(null, req.file.path);
+      
+      if (moodAnalysis && moodAnalysis.aggregated) {
+        mood = Math.round(moodAnalysis.aggregated.overallMood);
+        console.log(`✅ Python API analyzed voice mood: ${mood}/10`);
+      } else {
+        mood = 5; // Neutral fallback
+      }
+    }
 
     const journal = {
       id: Date.now().toString(),
@@ -271,19 +329,153 @@ app.get('/mood/trend-status', authenticateToken, (req, res) => {
   }
 });
 
+// ==================== ADVANCED MOOD ANALYSIS ENDPOINTS ====================
+
+// Get AI-generated conversation questions
+app.post('/mood/ai-questions', authenticateToken, async (req, res) => {
+  try {
+    console.log('🤖 Generating AI questions...');
+    
+    const response = await fetch(`${MOOD_API_URL}/llm/questions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        context: req.body.context || ''
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to generate questions');
+    }
+    
+    const result = await response.json();
+    console.log('✅ AI questions generated');
+    res.json(result);
+  } catch (error) {
+    console.error('AI questions error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate questions',
+      fallback: 'How are you feeling today? What has been on your mind lately?'
+    });
+  }
+});
+
+// Get personalized AI recommendations
+app.post('/mood/ai-recommendations', authenticateToken, async (req, res) => {
+  try {
+    console.log('🤖 Generating AI recommendations...');
+    
+    const { moodData, userResponses } = req.body;
+    
+    // Get user's conversation history
+    const userJournals = journals
+      .filter(j => j.userId === req.user.userId)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 5);
+    
+    const response = await fetch(`${MOOD_API_URL}/llm/recommendations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        moodData,
+        userResponses,
+        conversationHistory: userJournals
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to generate recommendations');
+    }
+    
+    const result = await response.json();
+    console.log('✅ AI recommendations generated');
+    res.json(result);
+  } catch (error) {
+    console.error('AI recommendations error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate recommendations',
+      fallback: {
+        recommendation: 'Take some time for self-care today. Consider activities that bring you joy and relaxation.'
+      }
+    });
+  }
+});
+
+// Analyze combined text + voice with full details
+app.post('/mood/analyze-detailed', authenticateToken, upload.single('audio'), async (req, res) => {
+  try {
+    const { text } = req.body;
+    const audioFile = req.file;
+    
+    console.log('🔍 Performing detailed mood analysis...');
+    
+    const moodAnalysis = await analyzeMoodWithPython(
+      text,
+      audioFile ? audioFile.path : null
+    );
+    
+    if (!moodAnalysis) {
+      // Fallback to simple analysis
+      const mood = text ? analyzeSentiment(text) : 5;
+      return res.json({
+        aggregated: {
+          overallMood: mood,
+          category: mood >= 7 ? 'positive' : mood >= 4 ? 'neutral' : 'low',
+          voiceComponent: null,
+          textComponent: mood,
+          discrepancy: null
+        }
+      });
+    }
+    
+    console.log('✅ Detailed analysis complete');
+    res.json(moodAnalysis);
+  } catch (error) {
+    console.error('Detailed analysis error:', error);
+    res.status(500).json({ message: 'Failed to analyze mood' });
+  }
+});
+
+// Check mood analysis API health
+app.get('/mood/api-status', authenticateToken, async (req, res) => {
+  try {
+    const response = await fetch(`${MOOD_API_URL}/health`, {
+      method: 'GET'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      res.json({ 
+        status: 'connected',
+        apiStatus: data.status,
+        provider: data.provider
+      });
+    } else {
+      res.json({ status: 'unavailable' });
+    }
+  } catch (error) {
+    res.json({ status: 'offline' });
+  }
+});
+
 // ==================== START SERVER ====================
 
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`\n🚀 MindSpace Backend Server Running!`);
   console.log(`📍 URL: http://localhost:${PORT}`);
+  console.log(`🐍 Mood Analysis API: ${MOOD_API_URL}`);
   console.log(`\n📋 Available endpoints:`);
-  console.log(`   POST /auth/register    - Create account`);
-  console.log(`   POST /auth/login       - Login`);
-  console.log(`   POST /journal/text     - Submit text journal`);
-  console.log(`   POST /journal/voice    - Submit voice note`);
-  console.log(`   GET  /mood/history     - Get mood history`);
-  console.log(`   GET  /mood/trend-status - Get trend status`);
+  console.log(`   POST /auth/register           - Create account`);
+  console.log(`   POST /auth/login              - Login`);
+  console.log(`   POST /journal/text            - Submit text journal`);
+  console.log(`   POST /journal/voice           - Submit voice note`);
+  console.log(`   GET  /mood/history            - Get mood history`);
+  console.log(`   GET  /mood/trend-status       - Get trend status`);
+  console.log(`   POST /mood/ai-questions       - Generate AI questions`);
+  console.log(`   POST /mood/ai-recommendations - Generate AI recommendations`);
+  console.log(`   POST /mood/analyze-detailed   - Detailed mood analysis`);
+  console.log(`   GET  /mood/api-status         - Check mood API status`);
   console.log(`\n💡 Connect frontend: http://localhost:3000\n`);
 });
 

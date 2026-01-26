@@ -24,6 +24,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
@@ -34,3 +35,25 @@ next-env.d.ts
 
 # Ignore node_modules folder
 node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.pytest_cache/
+
+# Mood Analysis System
+mood-analysis-system/__pycache__/
+mood-analysis-system/**/__pycache__/
+mood-analysis-system/data/sessions.json
+mood-analysis-system/data/session.json
+mood-analysis-system/.env
+
+# Backend uploads
+backend/uploads/

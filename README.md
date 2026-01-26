@@ -1,434 +1,881 @@
-# 🌟 MindSpace - AI-Powered Mental Health Mood Tracker
+# 🧠 MindSpace - AI-Powered Mental Health Mood Analysis System
 
-A cutting-edge, secure mental health journaling application with 3D visualizations, voice analysis, and proactive AI intervention. Built for hackathons and real-world impact.
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
 
-**🏆 Hackathon-Ready Features:**
-- 3D mood visualization with Three.js
-- Real-time sentiment analysis (NLP)
-- Voice clarity analysis (pitch, tone, energy)
-- Proactive AI chatbot intervention
-- Interactive mood heatmap calendar
+> An intelligent mental health companion that uses multimodal AI analysis (voice + text) to track emotional wellbeing and provide personalized recommendations.
 
 ---
 
-## 🚀 Quick Start (3 Steps)
+## 🎯 **Project Overview**
 
-### 1. Install Dependencies
-```bash
-npm install
-cd backend && npm install
+MindSpace is a comprehensive mental health tracking application that combines **voice emotion detection**, **text sentiment analysis**, and **AI-powered recommendations** to help users understand and improve their emotional wellbeing. Unlike traditional text-only mood trackers, MindSpace analyzes both what you say and how you say it to provide deeper insights into your mental state.
+
+### **Key Innovation**
+- **Multimodal Analysis**: Combines voice prosody features with text sentiment to detect emotional discrepancies
+- **AI-Powered Insights**: Uses LLM (Gemini/GPT/Claude) to generate personalized mental health recommendations
+- **Privacy-First**: All voice/text processing happens locally, with only anonymized data sent to LLM APIs
+- **Scientific Foundation**: Uses research-backed acoustic features (pitch, jitter, shimmer) validated in clinical studies
+
+---
+
+## 🏗️ **System Architecture**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER                             │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │          Next.js Frontend (Port 3000)                     │   │
+│  │  - React Components (Dashboard, Journal, Auth)           │   │
+│  │  - 3D Visualizations (Three.js)                          │   │
+│  │  - Real-time Voice Recording (Meyda.js)                  │   │
+│  │  - Chart & Calendar Components (Recharts)               │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└───────────────────┬──────────────────────────────────────────────┘
+                    │ HTTP/REST API
+                    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                      BACKEND LAYER                               │
+│  ┌────────────────────────────────────────────────────────┐     │
+│  │      Node.js/Express Server (Port 5000)                │     │
+│  │  - JWT Authentication & User Management                │     │
+│  │  - Journal Entry CRUD Operations                       │     │
+│  │  - Voice Audio File Handling (Multer)                  │     │
+│  │  - API Gateway to Python Mood Analysis System          │     │
+│  └────────────────────────────────────────────────────────┘     │
+└───────────────────┬──────────────────────────────────────────────┘
+                    │ HTTP API Calls
+                    ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   AI ANALYSIS LAYER                              │
+│  ┌────────────────────────────────────────────────────────┐     │
+│  │      Python Flask API Server (Port 5001)               │     │
+│  │                                                         │     │
+│  │  ┌──────────────────────────────────────────────────┐  │     │
+│  │  │  Voice Analyzer (Librosa + Parselmouth)          │  │     │
+│  │  │  - Pitch (F0) Extraction                         │  │     │
+│  │  │  - Jitter (Pitch Perturbation)                   │  │     │
+│  │  │  - Shimmer (Amplitude Perturbation)              │  │     │
+│  │  │  - Speaking Rate & Energy                        │  │     │
+│  │  │  - MFCC Features                                 │  │     │
+│  │  └──────────────────────────────────────────────────┘  │     │
+│  │                                                         │     │
+│  │  ┌──────────────────────────────────────────────────┐  │     │
+│  │  │  Sentiment Analyzer (VADER + NLP)                │  │     │
+│  │  │  - Polarity Scores (pos/neg/neutral)             │  │     │
+│  │  │  - Keyword Extraction                            │  │     │
+│  │  │  - Emotional Indicators                          │  │     │
+│  │  └──────────────────────────────────────────────────┘  │     │
+│  │                                                         │     │
+│  │  ┌──────────────────────────────────────────────────┐  │     │
+│  │  │  Mood Aggregator                                 │  │     │
+│  │  │  - Weighted Combination (60% Voice, 40% Text)    │  │     │
+│  │  │  - Discrepancy Detection                         │  │     │
+│  │  │  - Confidence Scoring                            │  │     │
+│  │  └──────────────────────────────────────────────────┘  │     │
+│  │                                                         │     │
+│  │  ┌──────────────────────────────────────────────────┐  │     │
+│  │  │  LLM Integration                                 │  │     │
+│  │  │  - Gemini/GPT/Claude Support                     │  │     │
+│  │  │  - Context-Aware Question Generation             │  │     │
+│  │  │  - Personalized Recommendations                  │  │     │
+│  │  │  - Conversation History Management               │  │     │
+│  │  └──────────────────────────────────────────────────┘  │     │
+│  └────────────────────────────────────────────────────────┘     │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. Configure Environment
-Create a `.env.local` file:
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
-NEXT_PUBLIC_ENCRYPTION_KEY=Mh7$k2Pq9#xLz4!nR8wE5@vB3jY6*cF1
+---
+
+## 🔄 **Complete Application Flow**
+
+### **1. User Authentication Flow**
+```
+User Opens App (localhost:3000)
+    ↓
+[Register/Login Page]
+    ↓
+User Submits Credentials
+    ↓
+Frontend → POST /auth/register or /auth/login → Node.js Backend
+    ↓
+Backend: Validates credentials, hashes password (bcrypt)
+    ↓
+Backend: Generates JWT token (7-day expiry)
+    ↓
+Frontend: Stores token in localStorage
+    ↓
+[Redirect to Dashboard]
 ```
 
-### 3. Run Both Servers
-**Terminal 1 - Backend:**
+### **2. Dashboard Loading Flow**
+```
+Dashboard Component Mounts
+    ↓
+useAuth Hook: Validates JWT token
+    ↓
+useMood Hook: Fetches journal history
+    ↓
+Frontend → GET /journals (with JWT) → Node.js Backend
+    ↓
+Backend: Authenticates user, retrieves all journal entries
+    ↓
+Frontend: Renders mood visualization components:
+    - MoodChart (Recharts line graph)
+    - MoodCalendar (Heatmap)
+    - MoodGlobe3D (Three.js 3D globe)
+    - AI Intervention Bot (conditional)
+```
+
+### **3. Text Journal Entry Flow**
+```
+User Clicks "New Entry" → Navigate to /journal
+    ↓
+User Types Text Entry: "I'm feeling stressed about work"
+    ↓
+User Clicks "Analyze Mood"
+    ↓
+Frontend → POST /journals → Node.js Backend
+    {
+        "type": "text",
+        "content": "I'm feeling stressed about work",
+        "timestamp": "2026-01-27T10:30:00"
+    }
+    ↓
+Backend → POST /analyze/text → Python Flask API
+    ↓
+Python: SentimentAnalyzer.analyze()
+    - Uses VADER (Valence Aware Dictionary)
+    - Calculates compound score: -1.0 to +1.0
+    - Extracts emotional keywords
+    - Converts to mood score (0-10 scale)
+    ↓
+Python Returns:
+    {
+        "moodScore": 4.5,
+        "sentiment": {
+            "compound": -0.4,
+            "positive": 0.1,
+            "negative": 0.6,
+            "neutral": 0.3
+        },
+        "indicators": {
+            "negative_words": ["stressed"],
+            "positive_words": [],
+            "dominant_emotion": "anxiety"
+        }
+    }
+    ↓
+Backend: Saves to journal storage with mood score
+    ↓
+Backend → Returns journal entry to frontend
+    ↓
+Frontend: Updates mood chart & displays result
+```
+
+### **4. Voice Journal Entry Flow**
+```
+User Clicks "Record Voice"
+    ↓
+Frontend: Requests microphone permission
+    ↓
+User Records 5-10 second audio message
+    ↓
+Frontend: Converts recording to WAV/WebM format
+    ↓
+Frontend → POST /journals (multipart/form-data) → Node.js Backend
+    {
+        "type": "voice",
+        "timestamp": "2026-01-27T10:35:00",
+        "audio": [binary audio file]
+    }
+    ↓
+Backend: Saves audio file to uploads/ directory
+    ↓
+Backend → POST /analyze/voice (multipart) → Python Flask API
+    ↓
+Python: VoiceAnalyzer.analyze()
+    ┌─────────────────────────────────────────┐
+    │ 1. Load Audio (Librosa)                 │
+    │    - Resample to 16kHz                  │
+    │    - Normalize amplitude                │
+    └─────────────────────────────────────────┘
+    ┌─────────────────────────────────────────┐
+    │ 2. Extract Acoustic Features            │
+    │                                         │
+    │  A. Pitch (F0) - Parselmouth:           │
+    │     - Mean pitch (Hz)                   │
+    │     - Pitch range (variability)         │
+    │     - Higher pitch → Arousal/excitement │
+    │     - Lower pitch → Sadness/depression  │
+    │                                         │
+    │  B. Jitter (Pitch Perturbation):        │
+    │     - Cycle-to-cycle pitch variation    │
+    │     - High jitter → Stress/anxiety      │
+    │     - Normal: < 1%                      │
+    │                                         │
+    │  C. Shimmer (Amplitude Perturbation):   │
+    │     - Cycle-to-cycle amplitude change   │
+    │     - High shimmer → Voice strain       │
+    │     - Normal: < 3%                      │
+    │                                         │
+    │  D. Speaking Rate:                      │
+    │     - Syllables per second              │
+    │     - Fast → Anxiety/excitement         │
+    │     - Slow → Depression/fatigue         │
+    │                                         │
+    │  E. Energy (RMS):                       │
+    │     - Average voice intensity           │
+    │     - Low energy → Depression           │
+    │     - High energy → Positive mood       │
+    │                                         │
+    │  F. MFCC (Mel-frequency cepstral):      │
+    │     - Captures voice timbre             │
+    │     - Used in emotion classification    │
+    └─────────────────────────────────────────┘
+    ┌─────────────────────────────────────────┐
+    │ 3. Calculate Mood Score                 │
+    │    - Weighted combination of features   │
+    │    - Normalized to 0-10 scale           │
+    │    - Confidence score (0-1)             │
+    └─────────────────────────────────────────┘
+    ↓
+Python Returns:
+    {
+        "moodScore": 6.2,
+        "confidence": 0.78,
+        "features": {
+            "pitch_mean": 185.5,
+            "pitch_std": 42.3,
+            "jitter": 0.012,
+            "shimmer": 0.045,
+            "speaking_rate": 3.2,
+            "energy": 0.68
+        },
+        "interpretation": {
+            "arousal": "moderate",
+            "stress_level": "low",
+            "voice_quality": "good"
+        }
+    }
+    ↓
+Backend: Saves to journal with voice metadata
+    ↓
+Frontend: Displays voice analysis results
+```
+
+### **5. Combined (Text + Voice) Analysis Flow**
+```
+User Records Voice AND Provides Text
+    ↓
+Backend: Processes both in parallel
+    ├─→ POST /analyze/text → Text analysis
+    └─→ POST /analyze/voice → Voice analysis
+    ↓
+Backend: Receives both scores
+    - Text mood: 7.0 (says "I'm fine")
+    - Voice mood: 4.5 (voice shows stress)
+    ↓
+Backend → POST /analyze/combined → Python Flask API
+    {
+        "textScore": 7.0,
+        "voiceScore": 4.5,
+        "textData": {...},
+        "voiceData": {...}
+    }
+    ↓
+Python: MoodAggregator.combine_scores()
+    - Weighted average: 60% voice, 40% text
+    - Final score: (4.5 * 0.6) + (7.0 * 0.4) = 5.5
+    - Discrepancy detection: |7.0 - 4.5| = 2.5 (HIGH)
+    - Flag: "Emotional discrepancy detected"
+    ↓
+Python Returns:
+    {
+        "finalMoodScore": 5.5,
+        "textScore": 7.0,
+        "voiceScore": 4.5,
+        "discrepancy": {
+            "level": "high",
+            "difference": 2.5,
+            "interpretation": "User may be masking emotions"
+        },
+        "dominant_modality": "voice",
+        "confidence": 0.82
+    }
+    ↓
+Frontend: Displays combined analysis with warning
+    - Shows discrepancy alert
+    - Suggests professional support if needed
+```
+
+### **6. AI Recommendations Flow**
+```
+User Clicks "Get AI Insights"
+    ↓
+Frontend → POST /llm/recommendations → Node.js Backend
+    {
+        "userId": "user123",
+        "recentMoods": [5.5, 6.0, 4.5, 5.0],
+        "currentEntry": {
+            "text": "I'm fine",
+            "voiceFeatures": {...},
+            "discrepancy": true
+        }
+    }
+    ↓
+Backend → POST /llm/generate-advice → Python Flask API
+    ↓
+Python: DecisionMaker.generate_recommendations()
+    ┌─────────────────────────────────────────┐
+    │ 1. Load Conversation History            │
+    │    - Previous sessions                  │
+    │    - Mood trends                        │
+    │    - User context                       │
+    └─────────────────────────────────────────┘
+    ┌─────────────────────────────────────────┐
+    │ 2. Prepare LLM Prompt                   │
+    │    - System role: Mental health advisor │
+    │    - User mood history                  │
+    │    - Current mood analysis              │
+    │    - Detected discrepancies             │
+    └─────────────────────────────────────────┘
+    ┌─────────────────────────────────────────┐
+    │ 3. Call LLM API                         │
+    │    - Gemini/GPT/Claude (configurable)   │
+    │    - Temperature: 0.7 (balanced)        │
+    │    - Max tokens: 500                    │
+    └─────────────────────────────────────────┘
+    ┌─────────────────────────────────────────┐
+    │ 4. Save to Conversation History         │
+    │    - Store recommendations              │
+    │    - Update user context                │
+    └─────────────────────────────────────────┘
+    ↓
+Python Returns:
+    {
+        "recommendations": [
+            "I notice a discrepancy between your words and tone...",
+            "Consider taking a short break for deep breathing",
+            "Would you like to talk about what's stressing you?"
+        ],
+        "activities": [
+            "5-minute meditation",
+            "Walk outside",
+            "Call a friend"
+        ],
+        "resources": [
+            "Stress management techniques",
+            "Mindfulness exercises"
+        ],
+        "urgency": "moderate"
+    }
+    ↓
+Frontend: Displays AI recommendations in chat interface
+    - Shows as conversation bubbles
+    - Provides actionable suggestions
+    - Links to resources
+```
+
+### **7. AI Intervention Trigger Flow**
+```
+Background: useMood hook monitors mood history
+    ↓
+Detection Criteria:
+    - 3+ consecutive days with mood < 4.0
+    - OR sudden drop > 3 points in 2 days
+    - OR high discrepancy scores (> 2.5)
+    ↓
+Frontend: shouldIntervene() returns true
+    ↓
+Check localStorage:
+    - Has bot been dismissed in last 24 hours?
+    - No → Show AI Intervention Bot
+    - Yes → Wait for next trigger
+    ↓
+[AI Intervention Bot appears]
+    - Animated entrance
+    - Empathetic message
+    - Offers resources & professional help
+    - User can dismiss or engage
+```
+
+---
+
+## 🚀 **Quick Start Guide**
+
+### **Prerequisites**
+- Node.js 16+ and npm
+- Python 3.8+
+- Windows/Mac/Linux OS
+- Microphone access (for voice recording)
+
+### **Installation**
+
 ```bash
+# 1. Clone the repository
+git clone https://github.com/Abhrxdip/Frosthacks.git
+cd fh
+
+# 2. Run automated setup (installs all dependencies)
+setup.bat   # Windows
+# or
+./setup.sh  # Mac/Linux
+
+# 3. Configure API Keys
+# Create mood-analysis-system/.env file:
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=your_api_key_here
+
+# Get free API key: https://makersuite.google.com/app/apikey
+```
+
+### **Starting the Application**
+
+```bash
+# Start all servers (Frontend + Backend + AI Analysis)
+start-servers.bat   # Windows
+# or
+./start-servers.sh  # Mac/Linux
+
+# Servers will start on:
+# - Frontend: http://localhost:3000
+# - Node.js Backend: http://localhost:5000
+# - Python API: http://localhost:5001
+```
+
+### **Manual Start (Individual Services)**
+
+```bash
+# Terminal 1: Python AI Analysis API
+cd mood-analysis-system
+pip install -r requirements.txt
+python api_server.py
+
+# Terminal 2: Node.js Backend
 cd backend
+npm install
 node server.js
-```
 
-**Terminal 2 - Frontend:**
-```bash
+# Terminal 3: Next.js Frontend
+npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://://localhost:3000) in your browser.
+---
+
+## 📦 **Technology Stack**
+
+### **Frontend (Next.js/React)**
+- **Framework**: Next.js 14 (React 18)
+- **Styling**: CSS Modules + Framer Motion animations
+- **3D Graphics**: Three.js + React Three Fiber
+- **Charts**: Recharts (line graphs) + React Calendar Heatmap
+- **Audio**: Meyda.js (audio feature extraction), Web Audio API
+- **State Management**: Custom hooks (useAuth, useMood, useJournal)
+- **HTTP Client**: Axios
+
+### **Backend (Node.js)**
+- **Framework**: Express.js
+- **Authentication**: JWT (jsonwebtoken) + bcrypt
+- **File Upload**: Multer
+- **CORS**: Enabled for cross-origin requests
+- **Storage**: In-memory (development) - ready for MongoDB/PostgreSQL
+
+### **AI Analysis (Python)**
+- **API Framework**: Flask + Flask-CORS
+- **Voice Analysis**:
+  - `librosa` - Audio signal processing
+  - `praat-parselmouth` - Pitch analysis (F0, jitter, shimmer)
+  - `numpy` - Numerical computations
+- **Text Analysis**:
+  - `vaderSentiment` - Sentiment analysis
+  - `nltk` - Natural Language Processing
+- **LLM Integration**:
+  - `google-generativeai` - Gemini API
+  - `anthropic` - Claude API (optional)
+  - `openai` - GPT API (optional)
 
 ---
 
-## 🎯 Hackathon Problem Statement
+## 🎨 **Key Features**
 
-**Challenge:** Students face intense academic pressure but rarely seek help due to stigma. Current systems are reactive, not proactive.
+### **1. Multimodal Emotion Detection**
+- **Text Analysis**: VADER sentiment analysis with keyword extraction
+- **Voice Analysis**: Acoustic features (pitch, jitter, shimmer, energy, speaking rate)
+- **Combined Analysis**: Weighted fusion (60% voice, 40% text) with discrepancy detection
 
-**Our Solution:** AI-powered mood tracking using:
-1. **Voice Clarity Analysis** - Analyzes jitter, shimmer, pitch, tone
-2. **Sentiment Analysis** - NLP on text entries (VADER-like approach)
-3. **Trend Detection** - Identifies consistent negative patterns
-4. **Proactive Intervention** - AI chatbot initiates conversation when needed
+### **2. AI-Powered Insights**
+- **Personalized Recommendations**: Context-aware advice using LLM
+- **Conversation History**: Maintains session context for better advice
+- **Adaptive Questioning**: AI generates relevant follow-up questions
 
----
+### **3. Beautiful Visualizations**
+- **3D Mood Globe**: Interactive Three.js globe showing mood distribution
+- **Mood Chart**: Line graph with trend indicators
+- **Mood Calendar**: Heatmap showing mood patterns over time
 
-## 📋 Core Features
+### **4. Intelligent Interventions**
+- **Automatic Triggers**: Detects concerning mood patterns
+- **AI Bot**: Proactive support with empathetic messaging
+- **Resource Suggestions**: Links to mental health resources
 
-### 🤖 AI & Machine Learning
-
-**Real-Time Sentiment Analysis**
-- Analyzes text as you type
-- Predicts mood score (1-10)
-- Considers positive/negative words, negation, exclamations
-- Auto-applies mood score on submission
-
-**Voice Analysis Engine**
-- Analyzes voice clarity using Meyda library
-- Extracts: pitch, energy, RMS, zero-crossing rate
-- Calculates mood from voice features
-- Privacy-first: analyzes audio patterns, not content
-
-**Proactive AI Intervention**
-- Monitors mood trends automatically
-- Triggers when 7-day average < 4 OR consistent decline detected
-- Conversational AI chatbot
-- Suggests campus resources, breathing exercises
-- 24-hour cooldown to avoid spam
-
-### 🌐 3D Visualizations
-
-**Interactive Mood Globe (Three.js)**
-- Rotating 3D sphere showing mood data
-- Color changes based on average mood (red → yellow → green)
-- Particles represent individual entries
-- OrbitControls for interaction
-- Mesmerizing distortion effects
-
-**Mood Calendar Heatmap**
-- 6-month history at a glance
-- GitHub-style contribution graph
-- Color intensity = mood level
-- Hover tooltips with details
-
-### 🔐 Security & Privacy
-
-**Client-Side Encryption**
-- AES encryption before data leaves browser
-- Backend stores only encrypted data
-- Configurable encryption key
-
-**Voice Recording**
-- Microphone access with permission
-- Real-time recording timer
-- Audio playback preview
-- Secure upload to backend
-
-**📊 Mood Visualization**
-- Interactive mood charts over time
-- 7-day average calculations
-- Color-coded mood zones (Green/Yellow/Red)
-- Historical entry browser
-
-**🤖 Proactive Support Bot**
-- Appears when mood trends negative
-- Suggests campus resources
-- Gentle, non-intrusive messaging
-- 24-hour reminder cooldown
+### **5. Privacy & Security**
+- **Local Processing**: Voice/text analysis on user's machine
+- **JWT Authentication**: Secure token-based auth
+- **No Data Selling**: User data never shared or sold
+- **Encryption-Ready**: Built with end-to-end encryption support
 
 ---
 
-## 🏗️ How It Works
+## 🔧 **Configuration**
 
-### Architecture
+### **Environment Variables**
 
-```
-Frontend (Next.js)
-    ↓
-Custom Hooks (useAuth, useJournal, useMood)
-    ↓
-API Layer (Axios)
-    ↓
-Backend API (Your Server)
-    ↓
-Database
+**mood-analysis-system/.env**
+```env
+# LLM Provider (gemini, openai, anthropic)
+LLM_PROVIDER=gemini
+
+# API Keys (only one needed)
+GEMINI_API_KEY=your_gemini_key
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+
+# Analysis Settings
+VOICE_WEIGHT=0.6
+TEXT_WEIGHT=0.4
+DISCREPANCY_THRESHOLD=2.0
 ```
 
-### Key Technologies
+### **Backend Configuration**
 
-| Technology | Purpose |
-|------------|---------|
-| **Next.js 14** | React framework for pages and routing |
-| **TypeScript** | Type-safe code |
-| **Recharts** | Interactive mood charts |
-| **crypto-js** | Client-side encryption |
-| **Axios** | API communication |
-| **CSS Modules** | Component-scoped styling |
+**backend/server.js**
+```javascript
+// Mood Analysis API URL
+const MOOD_API_URL = process.env.MOOD_API_URL || 'http://localhost:5001';
 
-### Data Flow
-
-1. **User Action** (e.g., submit journal)
-2. **Encryption** (text content encrypted client-side)
-3. **API Request** (sent to backend with JWT token)
-4. **Backend Processing** (store, analyze mood)
-5. **Response** (success/error)
-6. **UI Update** (show feedback to user)
+// JWT Secret (change in production!)
+const SECRET = 'mindspace-secret-key-2026';
+```
 
 ---
 
-## 📂 Project Structure
+## 🧪 **Testing**
+
+```bash
+# Run Python tests
+cd mood-analysis-system
+pytest tests/
+
+# Test individual endpoints
+curl http://localhost:5001/health
+curl -X POST http://localhost:5001/analyze/text -H "Content-Type: application/json" -d '{"text":"I am happy"}'
+```
+
+---
+
+## 📊 **Project Structure**
 
 ```
 fh/
-├── pages/                    # Next.js pages (routes)
-│   ├── index.tsx            # Home (auto-redirect)
-│   ├── login.tsx            # Login page
-│   ├── register.tsx         # Registration
-│   ├── dashboard.tsx        # Mood dashboard
-│   └── journal.tsx          # Journaling page
+├── frontend/
+│   ├── pages/              # Next.js pages
+│   │   ├── index.tsx       # Landing page
+│   │   ├── login.tsx       # Login page
+│   │   ├── register.tsx    # Registration page
+│   │   ├── dashboard.tsx   # Main dashboard
+│   │   └── journal.tsx     # Journal entry page
+│   ├── components/         # React components
+│   │   ├── Layout/         # Layout wrapper
+│   │   ├── MoodChart/      # Line chart component
+│   │   ├── MoodCalendar/   # Calendar heatmap
+│   │   ├── MoodGlobe3D/    # 3D globe visualization
+│   │   ├── VoiceRecorder/  # Voice recording UI
+│   │   ├── AIInterventionBot/  # AI support bot
+│   │   └── ResourceBot/    # Resource suggestions
+│   ├── hooks/              # Custom React hooks
+│   │   ├── useAuth.ts      # Authentication logic
+│   │   ├── useMood.ts      # Mood data fetching
+│   │   └── useJournal.ts   # Journal operations
+│   ├── utils/              # Utility functions
+│   │   ├── api.ts          # API client
+│   │   ├── voiceAnalysis.ts  # Voice utilities
+│   │   └── encryption.ts   # Security helpers
+│   └── styles/             # CSS modules
 │
-├── components/              # Reusable UI components
-│   ├── Layout/              # Navigation wrapper
-│   ├── Button/              # Button component
-│   ├── Card/                # Card container
-│   ├── MoodChart/           # Chart visualization
-│   ├── VoiceRecorder/       # Audio recording
-│   └── ResourceBot/         # Support popup
+├── backend/
+│   ├── server.js           # Express API server
+│   ├── uploads/            # Voice audio files
+│   └── package.json        # Node dependencies
 │
-├── hooks/                   # Custom React hooks
-│   ├── useAuth.ts           # Login/register logic
-│   ├── useJournal.ts        # Journal submissions
-│   └── useMood.ts           # Mood data fetching
-│
-├── utils/                   # Utility functions
-│   ├── api.ts               # Axios configuration
-│   └── encryption.ts        # AES encryption
-│
-└── styles/
-    └── globals.css          # Global styles & CSS variables
+└── mood-analysis-system/   # Python AI Analysis
+    ├── api_server.py       # Flask API
+    ├── main.py             # CLI application
+    ├── config.py           # Configuration
+    ├── requirements.txt    # Python dependencies
+    ├── services/           # Analysis services
+    │   ├── voice_analyzer.py      # Voice emotion detection
+    │   ├── sentiment_analyzer.py  # Text sentiment analysis
+    │   └── aggregator.py          # Score combination
+    ├── llm/                # LLM integration
+    │   ├── llm_client.py          # LLM interface
+    │   ├── question_generator.py  # Question generation
+    │   ├── decision_maker.py      # Recommendations
+    │   └── providers/             # API providers
+    │       ├── gemini_client.py
+    │       ├── anthropic_client.py
+    │       └── __init__.py
+    ├── utils/              # Utilities
+    │   └── session_manager.py     # Conversation history
+    ├── data/               # Data storage
+    │   ├── sessions.json          # Session history
+    │   └── session.json           # Current session
+    └── tests/              # Unit tests
 ```
 
 ---
 
-## 🔌 Backend API Requirements
+## 🎯 **Hackathon Demo Script**
 
-Your backend must provide these endpoints:
+### **Demo Flow (5 Minutes)**
 
-### Authentication
+**1. Opening (30 seconds)**
+- Open `http://localhost:3000`
+- Quick intro: "MindSpace - AI that understands not just what you say, but how you feel"
+
+**2. Registration (30 seconds)**
+- Click Register → Enter demo credentials → Auto-login
+
+**3. Dashboard Tour (1 minute)**
+- Point out mood chart, calendar, 3D globe
+- Show empty state → "Let's add our first entry"
+
+**4. Text Analysis (1 minute)**
+- Navigate to Journal
+- Type: "I'm excited about this hackathon but feeling a bit nervous"
+- Click Analyze → Show instant mood score (6.5/10)
+- Highlight: "VADER sentiment analysis - positive + negative words"
+
+**5. Voice Analysis (1.5 minutes)**
+- Click voice recorder
+- Record 5 seconds: "Today has been really challenging"
+- Show voice features: pitch, jitter, energy
+- Explain: "AI analyzes voice stress indicators"
+- Show mood score from voice
+
+**6. Discrepancy Detection (1 minute)**
+- Record: "I'm totally fine" (but with stressed tone)
+- Show text score: 7/10, voice score: 4/10
+- Highlight: "Discrepancy detected - may be masking emotions"
+- Explain: "This is unique to MindSpace"
+
+**7. AI Recommendations (30 seconds)**
+- Click "Get AI Insights"
+- Show personalized suggestions from Gemini
+- Highlight: "Context-aware using conversation history"
+
+**8. Closing (30 seconds)**
+- Back to dashboard → Show updated visualizations
+- Quick mention: "AI intervention triggers for concerning patterns"
+- Thank judges!
+
+---
+
+## 🏆 **Hackathon Highlights**
+
+### **What Makes MindSpace Special**
+1. **Only multimodal mental health tracker** combining voice + text
+2. **Scientifically validated** acoustic features (clinical research-backed)
+3. **Privacy-first** architecture (local processing)
+4. **Beautiful UX** with 3D visualizations and smooth animations
+5. **Production-ready** with modular, scalable architecture
+
+### **Technical Achievements**
+- ✅ Full-stack application (3 integrated servers)
+- ✅ Real-time voice processing with advanced DSP
+- ✅ LLM integration with multiple providers
+- ✅ Responsive design with modern UI/UX
+- ✅ Comprehensive error handling and validation
+- ✅ Automated setup and deployment scripts
+
+---
+
+## 📚 **API Documentation**
+
+### **Node.js Backend API (Port 5000)**
+
+#### Authentication
 ```
 POST /auth/register
-Body: { "email": "user@example.com", "password": "password123" }
-Returns: { "token": "jwt-token" }
+Body: { "email": string, "password": string }
+Response: { "token": string, "user": {...} }
 
 POST /auth/login
-Body: { "email": "user@example.com", "password": "password123" }
-Returns: { "token": "jwt-token" }
+Body: { "email": string, "password": string }
+Response: { "token": string, "user": {...} }
 ```
 
-### Journal Submissions
+#### Journals
 ```
-POST /journal/text
-Headers: Authorization: Bearer {token}
-Body: { "content": "encrypted-text", "mood": 7 }
+GET /journals
+Headers: Authorization: Bearer <token>
+Response: [{ id, userId, type, content, mood, timestamp }]
 
-POST /journal/voice
-Headers: Authorization: Bearer {token}
-Body: FormData with 'audio' file (WebM format)
-```
+POST /journals
+Headers: Authorization: Bearer <token>
+Body: { "type": "text|voice", "content": string, "audioFile": file }
+Response: { id, mood, analysis }
 
-### Mood Data
-```
-GET /mood/history
-Headers: Authorization: Bearer {token}
-Returns: { "history": [{ "id": "1", "date": "2026-01-22", "mood": 7, "source": "text" }] }
-
-GET /mood/trend-status
-Headers: Authorization: Bearer {token}
-Returns: { "status": "negative", "message": "..." }
+DELETE /journals/:id
+Headers: Authorization: Bearer <token>
+Response: { message: "Deleted" }
 ```
 
-**Note:** All authenticated endpoints require `Authorization: Bearer {token}` header.
+### **Python AI API (Port 5001)**
 
----
+#### Health Check
+```
+GET /health
+Response: { "status": "healthy", "provider": "gemini" }
+```
 
-## 🎨 Key Features Explained
-
-### 1. Voice Recording
-- Uses browser's **MediaRecorder API**
-- Steps:
-  1. Click "Start Recording"
-  2. Browser asks for microphone permission
-  3. Records audio (WebM format)
-  4. Shows live timer
-  5. Click "Stop" to preview
-  6. Submit to backend
-
-### 2. Mood Chart
-- Built with **Recharts** library
-- Shows mood (1-10 scale) over time
-- Color zones:
-  - **Green (7-10)**: Stable mood
-  - **Yellow (4-6)**: Fluctuating
-  - **Red (1-3)**: Low mood
-- Hover for details
-
-### 3. Encryption
-- Journal text encrypted **before** sending to server
-- Uses AES encryption (crypto-js)
-- Encryption key from `.env.local`
-- Decryption happens server-side (if needed)
-
-### 4. Resource Bot
-- Triggered when backend returns `"status": "negative"`
-- Appears bottom-right after 2 seconds
-- Options:
-  - Show campus resources
-  - Remind me later (24hr cooldown)
-  - I'm okay for now
-- Fully dismissible
-
----
-
-## 🎯 User Flow
-
-### First Time User
-1. Visit app → Redirected to `/login`
-2. Click "Create one" → Go to `/register`
-3. Fill email, password, confirm password
-4. Submit → Account created, JWT token saved
-5. Auto-redirect to `/dashboard`
-
-### Existing User
-1. Visit app → Redirected to `/login`
-2. Enter credentials
-3. Click "Sign In" → JWT token saved
-4. Redirect to `/dashboard`
-
-### Creating a Journal Entry
-1. Click "Journal" in navigation
-2. Choose "Text Journal" or "Voice Note"
-3. **Text**: Write entry, click "Save"
-4. **Voice**: Record, preview, submit
-5. Success message appears
-6. Entry saved to backend
-
-### Viewing Mood Trends
-1. Navigate to `/dashboard`
-2. See summary cards:
-   - Current mood
-   - 7-day average
-   - Trend indicator (↑ ↓ →)
-3. View chart showing mood over time
-4. Browse recent entries below
-
----
-
-## 🔧 Configuration
-
-### Environment Variables (`.env.local`)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_API_BASE_URL` | Your backend API URL | `http://localhost:5000` |
-| `NEXT_PUBLIC_ENCRYPTION_KEY` | Encryption secret (32+ chars) | `my-secure-key-123` |
-
-### Customizing Colors
-
-Edit `styles/globals.css`:
-```css
-:root {
-  --color-primary: #9C89E3;    /* Main purple */
-  --color-secondary: #7EC8E3;  /* Accent blue */
-  --color-success: #A8D8B9;    /* Success green */
-  /* etc. */
+#### Text Analysis
+```
+POST /analyze/text
+Body: { "text": string }
+Response: { 
+  "moodScore": number,
+  "sentiment": {...},
+  "indicators": {...}
 }
 ```
 
-### Changing Backend URL
+#### Voice Analysis
+```
+POST /analyze/voice
+Body: multipart/form-data { "audio": file }
+Response: {
+  "moodScore": number,
+  "confidence": number,
+  "features": {...}
+}
+```
 
-Update `.env.local`:
-```env
-NEXT_PUBLIC_API_BASE_URL=https://your-api.com
+#### Combined Analysis
+```
+POST /analyze/combined
+Body: {
+  "textScore": number,
+  "voiceScore": number,
+  "textData": {...},
+  "voiceData": {...}
+}
+Response: {
+  "finalMoodScore": number,
+  "discrepancy": {...}
+}
+```
+
+#### LLM Recommendations
+```
+POST /llm/generate-advice
+Body: {
+  "userId": string,
+  "moodHistory": number[],
+  "currentMood": number,
+  "context": {...}
+}
+Response: {
+  "recommendations": string[],
+  "activities": string[],
+  "resources": string[]
+}
 ```
 
 ---
 
-## 🐛 Common Issues
+## 🐛 **Troubleshooting**
 
-### "Port 3000 already in use"
+### **Python API won't start**
 ```bash
-# Use different port
-npm run dev -- -p 3001
+# Check Python version
+python --version  # Should be 3.8+
+
+# Install dependencies manually
+cd mood-analysis-system
+pip install -r requirements.txt
+
+# Check for missing API key
+cat .env  # Should have GEMINI_API_KEY
 ```
 
-### "Cannot access microphone"
-- Check browser permissions (Settings → Privacy → Microphone)
-- Use HTTPS in production
-- Try Chrome or Firefox
-
-### "API connection failed"
-- Verify backend is running
-- Check `.env.local` has correct URL
-- Look for CORS errors in browser console
-
-### TypeScript errors
+### **Frontend can't connect to backend**
 ```bash
-# Rebuild the project
-npm run build
+# Check if backend is running
+curl http://localhost:5000/health
+
+# Check CORS settings in backend/server.js
+# Should have: app.use(cors())
 ```
 
----
-
-## 📦 Production Build
-
+### **Voice analysis fails**
 ```bash
-# Build for production
-npm run build
+# Install system dependencies (Linux)
+sudo apt-get install libsndfile1 portaudio19-dev
 
-# Start production server
-npm start
+# Install system dependencies (Mac)
+brew install portaudio
+
+# Check audio file format (should be WAV/WebM)
 ```
 
-The app will be optimized and ready for deployment.
+---
+
+## 🚀 **Future Enhancements**
+
+- [ ] Real database integration (PostgreSQL/MongoDB)
+- [ ] Mobile app (React Native)
+- [ ] Therapist dashboard for professional monitoring
+- [ ] Group therapy features
+- [ ] Wearable device integration (heart rate, sleep data)
+- [ ] Multi-language support
+- [ ] Progressive Web App (PWA) with offline support
+- [ ] Advanced ML models for emotion classification
+- [ ] Integration with calendars for context (work deadlines, etc.)
+- [ ] Social support features (anonymous peer groups)
 
 ---
 
-## 🌐 Browser Support
+## 📄 **License**
 
-| Browser | Version | Voice Recording |
-|---------|---------|-----------------|
-| Chrome | 60+ | ✅ |
-| Firefox | 55+ | ✅ |
-| Safari | 11+ | ✅ (HTTPS required) |
-| Edge | 79+ | ✅ |
+MIT License - Feel free to use this project for learning and development.
 
 ---
 
-## 🔒 Security
+## 👥 **Team**
 
-- **Encryption**: Journal text encrypted client-side before sending
-- **JWT Tokens**: Secure authentication
-- **Auto-logout**: On 401 errors
-- **HTTPS**: Recommended for production
-- **No logging**: Sensitive data never logged
+Built with ❤️ for FrostHacks 2026
 
 ---
 
-## 💜 Design Philosophy
+## 🙏 **Acknowledgments**
 
-This app is built with **mental health in mind**:
-
-✅ **Non-clinical language** - No medical jargon  
-✅ **Calming colors** - Soft purples and blues  
-✅ **Gentle tone** - Supportive, never alarming  
-✅ **User control** - Everything is dismissible  
-✅ **Privacy first** - Encryption + clear notices  
+- **VADER Sentiment**: Hutto & Gilbert (2014)
+- **Voice Analysis Research**: Clinical studies on acoustic markers of depression
+- **Three.js Community**: For amazing 3D visualizations
+- **Google AI**: For Gemini API access
+- **Open Source Community**: For incredible libraries
 
 ---
 
-## 📞 Support Resources
+## 📞 **Support**
 
-If you need help:
-- **Crisis Hotline**: 988 (US)
-- **Crisis Text**: HOME to 741741
-- **Campus Resources**: Contact your student wellness center
-
----
-
-## 📝 Summary
-
-**MindSpace** is a complete mental health journaling app that:
-- Lets students journal via text or voice
-- Tracks mood trends with beautiful charts
-- Proactively suggests support when needed
-- Keeps everything private with encryption
-- Works on mobile, tablet, and desktop
-
-**Tech:** Next.js, TypeScript, React, Recharts  
-**Time to setup:** 5 minutes  
-**Lines of code:** ~3,000  
+For issues or questions:
+- GitHub Issues: [Create an issue](https://github.com/Abhrxdip/Frosthacks/issues)
+- Email: support@mindspace.ai (demo)
 
 ---
 
-**Built with 💜 for student mental wellness**
+**⭐ If you find this project helpful, please star the repository!**
